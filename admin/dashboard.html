@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - MS Global Visa</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0a1628; --bg-card: rgba(255,255,255,0.05); --gold: #cc8e4a;
+            --text: #fff; --text-dim: rgba(255,255,255,0.5); --border: rgba(255,255,255,0.1);
+            --danger: #ff6b6b; --success: #51cf66; --info: #339af0;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+        /* ─── Sidebar ─── */
+        .sidebar {
+            position: fixed; left: 0; top: 0; bottom: 0; width: 260px;
+            background: rgba(255,255,255,0.03); border-right: 1px solid var(--border);
+            padding: 24px 0; display: flex; flex-direction: column; z-index: 100;
+        }
+        .sidebar-logo { padding: 0 24px 24px; border-bottom: 1px solid var(--border); text-align: center; }
+        .sidebar-logo h2 { color: var(--text); font-size: 1.15rem; }
+        .sidebar-logo h2 span { color: var(--gold); }
+        .sidebar-logo p { color: var(--text-dim); font-size: 0.75rem; margin-top: 4px; }
+        .sidebar-nav { flex: 1; padding: 16px 12px; }
+        .sidebar-nav a {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            color: var(--text-dim); text-decoration: none; border-radius: 10px;
+            font-size: 0.9rem; transition: all 0.3s; margin-bottom: 4px;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active { background: rgba(204,142,74,0.1); color: var(--gold); }
+        .sidebar-nav a i { width: 20px; text-align: center; }
+        .sidebar-footer { padding: 16px 24px; border-top: 1px solid var(--border); }
+        .logout-btn {
+            width: 100%; padding: 12px; border: 1px solid var(--danger); background: rgba(255,107,107,0.1);
+            color: var(--danger); border-radius: 10px; cursor: pointer; font-size: 0.85rem;
+            font-weight: 600; transition: all 0.3s; font-family: 'Inter', sans-serif;
+        }
+        .logout-btn:hover { background: var(--danger); color: #fff; }
+
+        /* ─── Main Content ─── */
+        .main { margin-left: 260px; padding: 32px; }
+        .top-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 32px; flex-wrap: wrap; gap: 16px;
+        }
+        .top-bar h1 { font-size: 1.6rem; font-weight: 700; }
+        .top-bar h1 span { color: var(--gold); }
+        .top-bar-right { display: flex; align-items: center; gap: 16px; }
+        .admin-badge {
+            display: flex; align-items: center; gap: 8px; padding: 8px 16px;
+            background: rgba(204,142,74,0.1); border: 1px solid rgba(204,142,74,0.2);
+            border-radius: 50px; color: var(--gold); font-size: 0.82rem; font-weight: 600;
+        }
+
+        /* ─── Stats Cards ─── */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 32px; }
+        .stat-card {
+            background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 24px; transition: all 0.3s;
+        }
+        .stat-card:hover { border-color: rgba(204,142,74,0.3); transform: translateY(-2px); }
+        .stat-card .stat-icon {
+            width: 48px; height: 48px; border-radius: 12px; display: flex;
+            align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 16px;
+        }
+        .stat-card .stat-icon.gold { background: rgba(204,142,74,0.15); color: var(--gold); }
+        .stat-card .stat-icon.blue { background: rgba(51,154,240,0.15); color: var(--info); }
+        .stat-card .stat-icon.green { background: rgba(81,207,102,0.15); color: var(--success); }
+        .stat-card .stat-icon.red { background: rgba(255,107,107,0.15); color: var(--danger); }
+        .stat-card h3 { font-size: 2rem; font-weight: 700; margin-bottom: 4px; }
+        .stat-card p { color: var(--text-dim); font-size: 0.82rem; }
+
+        /* ─── Table / Messages ─── */
+        .panel {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden; margin-bottom: 24px;
+        }
+        .panel-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 24px; border-bottom: 1px solid var(--border); flex-wrap: wrap; gap: 12px;
+        }
+        .panel-header h2 { font-size: 1.1rem; font-weight: 700; }
+        .panel-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+        .search-box {
+            display: flex; align-items: center; background: rgba(255,255,255,0.06);
+            border: 1px solid var(--border); border-radius: 8px; padding: 0 12px;
+        }
+        .search-box i { color: var(--text-dim); font-size: 0.85rem; }
+        .search-box input {
+            background: transparent; border: none; outline: none; color: var(--text);
+            padding: 8px 10px; font-size: 0.85rem; font-family: 'Inter', sans-serif; width: 180px;
+        }
+        .btn-small {
+            padding: 8px 16px; border-radius: 8px; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; border: none;
+        }
+        .btn-gold { background: rgba(204,142,74,0.15); color: var(--gold); }
+        .btn-gold:hover { background: rgba(204,142,74,0.25); }
+        .btn-danger { background: rgba(255,107,107,0.15); color: var(--danger); }
+        .btn-danger:hover { background: rgba(255,107,107,0.25); }
+        .btn-export { background: rgba(81,207,102,0.15); color: var(--success); }
+        .btn-export:hover { background: rgba(81,207,102,0.25); }
+
+        /* Table */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            text-align: left; padding: 14px 20px; font-size: 0.75rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim);
+            border-bottom: 1px solid var(--border); white-space: nowrap;
+        }
+        td {
+            padding: 16px 20px; font-size: 0.88rem; border-bottom: 1px solid var(--border);
+            vertical-align: top;
+        }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+        .status-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 50px;
+            font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+        }
+        .status-new { background: rgba(51,154,240,0.15); color: var(--info); }
+        .status-read { background: rgba(81,207,102,0.15); color: var(--success); }
+        .status-replied { background: rgba(204,142,74,0.15); color: var(--gold); }
+        .empty-state {
+            text-align: center; padding: 60px 20px; color: var(--text-dim);
+        }
+        .empty-state i { font-size: 3rem; margin-bottom: 16px; opacity: 0.3; }
+        .empty-state p { font-size: 0.95rem; }
+
+        /* ─── Modal ─── */
+        .modal-overlay {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+            z-index: 200; align-items: center; justify-content: center; padding: 20px;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: #111d32; border: 1px solid var(--border); border-radius: 20px;
+            width: 600px; max-width: 100%; max-height: 85vh; overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 20px 24px; border-bottom: 1px solid var(--border);
+        }
+        .modal-header h3 { font-size: 1.1rem; }
+        .modal-close {
+            background: rgba(255,255,255,0.06); border: none; color: var(--text-dim);
+            width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+            font-size: 1rem; transition: all 0.3s;
+        }
+        .modal-close:hover { background: rgba(255,107,107,0.2); color: var(--danger); }
+        .modal-body { padding: 24px; }
+        .detail-row { margin-bottom: 18px; }
+        .detail-row label { display: block; font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .detail-row .value { font-size: 0.95rem; color: var(--text); line-height: 1.5; word-break: break-word; }
+        .modal-footer { padding: 16px 24px; border-top: 1px solid var(--border); display: flex; gap: 10px; justify-content: flex-end; }
+
+        /* ─── Toast ─── */
+        .toast {
+            position: fixed; top: 24px; right: 24px; padding: 14px 24px;
+            background: rgba(81,207,102,0.15); border: 1px solid rgba(81,207,102,0.3);
+            color: var(--success); border-radius: 12px; font-size: 0.85rem; font-weight: 600;
+            z-index: 300; animation: slideUp 0.3s ease;
+            display: none;
+        }
+        .toast.show { display: block; }
+
+        /* ─── Responsive ─── */
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; position: relative; border-right: none; border-bottom: 1px solid var(--border); }
+            .sidebar-nav { display: flex; padding: 12px; overflow-x: auto; }
+            .sidebar-nav a { white-space: nowrap; margin-bottom: 0; }
+            .sidebar-footer { display: none; }
+            .main { margin-left: 0; padding: 20px; }
+            .search-box input { width: 120px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-logo">
+            <h2>MS Global <span>Visa</span></h2>
+            <p>Admin Dashboard</p>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#" class="active" onclick="showSection('messages', this, event)"><i class="fas fa-inbox"></i> Messages</a>
+            <a href="#" onclick="showSection('overview', this, event)"><i class="fas fa-chart-bar"></i> Overview</a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+        </div>
+    </aside>
+
+    <!-- Main -->
+    <div class="main">
+        <div class="top-bar">
+            <h1>📋 <span>Inquiries</span> Dashboard</h1>
+            <div class="top-bar-right">
+                <div class="admin-badge"><i class="fas fa-user-shield"></i> Admin</div>
+                <button class="logout-btn" style="width:auto; padding: 8px 20px;" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+
+        <!-- Stats / Overview Section -->
+        <div id="section-overview" style="display:none;">
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card"><div class="stat-icon gold"><i class="fas fa-envelope"></i></div><h3 id="totalCount">0</h3><p>Total Inquiries</p></div>
+            <div class="stat-card"><div class="stat-icon blue"><i class="fas fa-bell"></i></div><h3 id="newCount">0</h3><p>New (Unread)</p></div>
+            <div class="stat-card"><div class="stat-icon green"><i class="fas fa-check-circle"></i></div><h3 id="readCount">0</h3><p>Read / Reviewed</p></div>
+            <div class="stat-card"><div class="stat-icon red"><i class="fas fa-calendar-day"></i></div><h3 id="todayCount">0</h3><p>Today's Inquiries</p></div>
+        </div>
+        </div>
+
+        <!-- Messages Table -->
+        <div id="section-messages">
+        <div class="panel">
+            <div class="panel-header">
+                <h2><i class="fas fa-inbox"></i> Contact Form Submissions</h2>
+                <div class="panel-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search name, phone..." oninput="renderTable()">
+                    </div>
+                    <select id="filterStatus" class="btn-small btn-gold" onchange="renderTable()" style="background: rgba(204,142,74,0.15); color: #cc8e4a; border: 1px solid rgba(204,142,74,0.2); border-radius: 8px; padding: 8px 12px; font-family: 'Inter', sans-serif;">
+                        <option value="all">All Status</option>
+                        <option value="new">New</option>
+                        <option value="read">Read</option>
+                        <option value="replied">Replied</option>
+                    </select>
+                    <button class="btn-small btn-export" onclick="exportCSV()"><i class="fas fa-download"></i> Export CSV</button>
+                    <button class="btn-small btn-danger" onclick="clearAll()"><i class="fas fa-trash"></i> Clear All</button>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Service</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+                <div class="empty-state" id="emptyState" style="display:none;">
+                    <i class="fas fa-inbox"></i>
+                    <p>No inquiries yet. Submissions from the contact form will appear here.</p>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div class="modal-overlay" id="detailModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-user"></i> Inquiry Details</h3>
+                <button class="modal-close" onclick="closeModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="modalBody"></div>
+            <div class="modal-footer">
+                <button class="btn-small btn-gold" id="btnMarkRead" onclick="markStatus('read')"><i class="fas fa-check"></i> Mark Read</button>
+                <button class="btn-small btn-export" id="btnMarkReplied" onclick="markStatus('replied')"><i class="fas fa-reply"></i> Mark Replied</button>
+                <button class="btn-small btn-danger" onclick="deleteEntry()"><i class="fas fa-trash"></i> Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+    <script>
+        // ─── Firebase Init ───
+        const firebaseConfig = {
+            apiKey: "AIzaSyAEfow7KrkOL0dPO6imC2HJvhyFxzzE8j0",
+            authDomain: "ms-global-visa.firebaseapp.com",
+            projectId: "ms-global-visa",
+            storageBucket: "ms-global-visa.firebasestorage.app",
+            messagingSenderId: "997183721711",
+            appId: "1:997183721711:web:aeabce3e29a133212d0b1a",
+            measurementId: "G-3ZKZ4HT1C4"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // ─── Auth Guard ───
+        if (sessionStorage.getItem('admin_logged_in') !== 'true') {
+            window.location.href = 'login.html';
+        }
+
+        // ─── Section Toggle ───
+        function showSection(section, linkEl, event) {
+            if (event) event.preventDefault();
+            document.getElementById('section-messages').style.display = section === 'messages' ? 'block' : 'none';
+            document.getElementById('section-overview').style.display = section === 'overview' ? 'block' : 'none';
+            document.querySelectorAll('.sidebar-nav a').forEach(a => a.classList.remove('active'));
+            if (linkEl) linkEl.classList.add('active');
+            if (section === 'overview') renderStats();
+        }
+
+        let currentId = null;
+        let allMessages = [];
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg; t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2500);
+        }
+
+        // ─── Real-time Firestore Listener ───
+        db.collection('inquiries').orderBy('timestamp', 'desc').onSnapshot((snapshot) => {
+            allMessages = [];
+            snapshot.forEach(doc => {
+                allMessages.push({ id: doc.id, ...doc.data() });
+            });
+            renderTable();
+            renderStats();
+        }, (error) => {
+            console.error('Firestore listen error:', error);
+            showToast('Error loading data');
+        });
+
+        // ─── Render Stats ───
+        function renderStats() {
+            const today = new Date().toLocaleDateString();
+            document.getElementById('totalCount').textContent = allMessages.length;
+            document.getElementById('newCount').textContent = allMessages.filter(m => (m.status || 'new') === 'new').length;
+            document.getElementById('readCount').textContent = allMessages.filter(m => m.status === 'read' || m.status === 'replied').length;
+            document.getElementById('todayCount').textContent = allMessages.filter(m => {
+                if (!m.date) return false;
+                return m.date.includes(today) || m.date.startsWith(today);
+            }).length;
+        }
+
+        // ─── Render Table ───
+        function renderTable() {
+            const search = (document.getElementById('searchInput').value || '').toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+            const tbody = document.getElementById('tableBody');
+            const empty = document.getElementById('emptyState');
+
+            let filtered = allMessages.filter(m => {
+                const matchSearch = !search ||
+                    (m.name || '').toLowerCase().includes(search) ||
+                    (m.phone || '').toLowerCase().includes(search) ||
+                    (m.email || '').toLowerCase().includes(search) ||
+                    (m.service || '').toLowerCase().includes(search);
+                const matchStatus = statusFilter === 'all' || (m.status || 'new') === statusFilter;
+                return matchSearch && matchStatus;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                empty.style.display = 'block';
+                renderStats();
+                return;
+            }
+            empty.style.display = 'none';
+
+            tbody.innerHTML = filtered.map((m, i) => {
+                const status = m.status || 'new';
+                return `<tr>
+                    <td>${i + 1}</td>
+                    <td><strong>${esc(m.name)}</strong></td>
+                    <td>${esc(m.phone || '-')}</td>
+                    <td>${esc(m.email || '-')}</td>
+                    <td>${esc(m.service || '-')}</td>
+                    <td style="white-space:nowrap">${esc(m.date || '-')}</td>
+                    <td><span class="status-badge status-${status}">${status}</span></td>
+                    <td><button class="btn-small btn-gold" onclick="viewDetail('${m.id}')"><i class="fas fa-eye"></i> View</button></td>
+                </tr>`;
+            }).join('');
+
+            renderStats();
+        }
+
+        function esc(str) {
+            const div = document.createElement('div');
+            div.textContent = str || '';
+            return div.innerHTML;
+        }
+
+        // ─── View Detail ───
+        async function viewDetail(id) {
+            const m = allMessages.find(x => x.id === id);
+            if (!m) return;
+            currentId = id;
+
+            document.getElementById('modalBody').innerHTML = `
+                <div class="detail-row"><label>Full Name</label><div class="value">${esc(m.name)}</div></div>
+                <div class="detail-row"><label>Phone</label><div class="value">${esc(m.phone || 'Not provided')}</div></div>
+                <div class="detail-row"><label>Email</label><div class="value">${esc(m.email || 'Not provided')}</div></div>
+                <div class="detail-row"><label>Service</label><div class="value">${esc(m.service || 'General')}</div></div>
+                <div class="detail-row"><label>Occupation / About</label><div class="value">${esc(m.occupation || 'Not provided')}</div></div>
+                <div class="detail-row"><label>Message</label><div class="value">${esc(m.message || 'No message')}</div></div>
+                <div class="detail-row"><label>Submitted On</label><div class="value">${esc(m.date || '-')}</div></div>
+                <div class="detail-row"><label>Status</label><div class="value"><span class="status-badge status-${m.status || 'new'}">${m.status || 'new'}</span></div></div>
+            `;
+            document.getElementById('detailModal').classList.add('show');
+
+            // Auto mark as read if new
+            if ((m.status || 'new') === 'new') {
+                try {
+                    await db.collection('inquiries').doc(id).update({ status: 'read' });
+                } catch (err) { console.error(err); }
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('show');
+            currentId = null;
+        }
+
+        async function markStatus(status) {
+            if (!currentId) return;
+            try {
+                await db.collection('inquiries').doc(currentId).update({ status: status });
+                showToast(`Marked as ${status}`);
+            } catch (err) {
+                console.error(err);
+                showToast('Error updating status');
+            }
+            closeModal();
+        }
+
+        async function deleteEntry() {
+            if (!currentId) return;
+            if (!confirm('Delete this inquiry permanently?')) return;
+            try {
+                await db.collection('inquiries').doc(currentId).delete();
+                showToast('Inquiry deleted');
+            } catch (err) {
+                console.error(err);
+                showToast('Error deleting');
+            }
+            closeModal();
+        }
+
+        async function clearAll() {
+            if (!confirm('Delete ALL inquiries? This cannot be undone.')) return;
+            try {
+                const snapshot = await db.collection('inquiries').get();
+                const batch = db.batch();
+                snapshot.forEach(doc => batch.delete(doc.ref));
+                await batch.commit();
+                showToast('All inquiries cleared');
+            } catch (err) {
+                console.error(err);
+                showToast('Error clearing');
+            }
+        }
+
+        // ─── Export CSV ───
+        function exportCSV() {
+            if (allMessages.length === 0) { showToast('No data to export'); return; }
+            const headers = ['Name', 'Phone', 'Email', 'Service', 'Occupation', 'Message', 'Date', 'Status'];
+            const rows = allMessages.map(m => [
+                m.name, m.phone || '', m.email || '', m.service || '', m.occupation || '',
+                (m.message || '').replace(/"/g, '""'), m.date || '', m.status || 'new'
+            ].map(v => `"${v}"`).join(','));
+            const csv = [headers.join(','), ...rows].join('\n');
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = `inquiries_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click(); URL.revokeObjectURL(url);
+            showToast('CSV exported!');
+        }
+
+        function logout() {
+            sessionStorage.removeItem('admin_logged_in');
+            sessionStorage.removeItem('admin_login_time');
+            window.location.href = 'login.html';
+        }
+
+        // Close modal on overlay click
+        document.getElementById('detailModal').addEventListener('click', (e) => {
+            if (e.target === e.currentTarget) closeModal();
+        });
+    </script>
+</body>
+</html>
