@@ -2288,10 +2288,12 @@ footer { background: var(--primary-dark); color: var(--white); }
 
 
 .about-img-custom {
-  width: 540px;
-  height: 720px;
+  width: auto;
+  height: auto
+  max-width: auto;
   border-radius: 30px;
 }
 .about-text {
   margin-top: -50px; /* Adjust the value as needed */
+
 }
